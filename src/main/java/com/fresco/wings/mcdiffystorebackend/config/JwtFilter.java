@@ -8,8 +8,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.bind.support.SessionAttributeStore;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -34,17 +32,18 @@ public class JwtFilter extends OncePerRequestFilter {
         String username = null;
         String token = null;
 
-        if(null!=authHeader && authHeader.contains("Bearer ")) {
+        if (null != authHeader && authHeader.contains("Bearer ")) {
             token = authHeader.substring(7);
             username = jwtUtils.getUsernameFromToken(token);
         }
 
-        if(null!=username && null==SecurityContextHolder.getContext().getAuthentication()) {
+        if (null != username && null == SecurityContextHolder.getContext().getAuthentication()) {
             Optional<User> optionalUser = userRepo.findByUsername(username);
-            if(optionalUser.isPresent() && !jwtUtils.isTokenExpired(token)) {
+            if (optionalUser.isPresent() && !jwtUtils.isTokenValid(token)) {
                 UserDetails userDetails = optionalUser.get();
 
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);

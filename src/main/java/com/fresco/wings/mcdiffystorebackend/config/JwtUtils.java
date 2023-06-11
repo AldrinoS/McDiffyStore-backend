@@ -7,6 +7,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -19,14 +20,20 @@ public class JwtUtils {
     @Autowired
     private UserRepo userRepo;
 
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.validity}")
+    private Integer jwtValidity;
+
     private String doGenerateToken(List<Role> roles, String username) {
 
         return Jwts.builder()
                 .claim("role", roles.toString())
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() * 90000))
-                .signWith(SignatureAlgorithm.HS512, "secret")
+                .setExpiration(new Date(System.currentTimeMillis() * jwtValidity))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
 
@@ -35,7 +42,7 @@ public class JwtUtils {
     }
 
     private Claims getAllClaim(String token) {
-        return Jwts.parser().setSigningKey("secret").parseClaimsJws(token).getBody();
+        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
     }
 
     private <T> T getClaimFromToken (String token, Function<Claims, T> claimsResolver) {

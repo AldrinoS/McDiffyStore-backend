@@ -71,7 +71,7 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         for (Role role : roles) {
-            System.out.println("Role: "+role.getRole());
+//            System.out.println("Role: "+role.getRole());
             authorities.add(new SimpleGrantedAuthority(role.getRole()));
         }
         return authorities;
